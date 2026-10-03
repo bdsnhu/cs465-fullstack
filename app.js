@@ -7,7 +7,12 @@ var logger = require('morgan');
 var indexRouter = require('./app_server/routes/index');
 var usersRouter = require('./app_server/routes/users');
 var travelRouter = require('./app_server/routes/travel');
+var apiRouter = require('./app_api/routes/index');
 var handlebars = require('hbs');
+
+// Bring in the database connection (connects to MongoDB and registers the Trip model)
+// The models now live with the API in app_api
+require('./app_api/models/db');
 
 var app = express();
 
@@ -28,6 +33,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/travel', travelRouter);
+app.use('/api', apiRouter);
+
+// Unknown /api paths get a JSON 404 instead of the HTML error page
+app.use('/api', function(req, res) {
+  res.status(404).json({ message: 'API endpoint not found' });
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
