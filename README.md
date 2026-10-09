@@ -1,4 +1,4 @@
-# Travlr Getaways – Module Five
+# Travlr Getaways – Module Six
 
 ## Setup
 1. Install and start MongoDB locally (default port 27017).
