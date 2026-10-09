@@ -45,3 +45,38 @@ Sample codes: `GALR261114`, `DAWR261215`, `CLAR270121`.
 app_api/        controllers/trips.js, routes/index.js, models/ (db, travlr, seed, verify)
 app_server/     controllers, routes, views (calls the API)
 ```
+
+## Module Six: Angular admin SPA (`app_admin`) + full CRUD API
+
+### Run it (three terminals)
+```
+npm run seed                    # (Express project root) load the 3 sample trips
+npm start                       # Express site + API on http://localhost:3000
+cd app_admin && npm install     # first time only
+npm start                       # Angular admin SPA on http://localhost:4200  (runs `ng serve`)
+```
+
+### API (all under `/api`, CORS allows the admin origin http://localhost:4200)
+| Method | Endpoint | Controller | Responses |
+|--------|----------|------------|-----------|
+| GET | `/api/trips` | `tripsList` | 200 array; 500 |
+| POST | `/api/trips` | `tripsAddTrip` | 201 new trip; 400 validation errors; 409 duplicate code; 500 |
+| GET | `/api/trips/:tripCode` | `tripsFindByCode` | 200 array with the trip; 404; 500 |
+| PUT | `/api/trips/:tripCode` | `tripsUpdateTrip` | 200 updated trip; 400; 404; 409 (code belongs to another trip); 500 |
+| DELETE | `/api/trips/:tripCode` | `tripsDeleteTrip` | 200 deleted trip; 404; 500 |
+
+### Angular structure (`app_admin/src/app`)
+| Folder / file | Purpose |
+|---|---|
+| `models/trip.ts` | `Trip` interface matching the API's JSON |
+| `services/trip-data.service.ts` | `getTrips`, `getTrip`, `addTrip`, `updateTrip`, `deleteTrip` (HttpClient to `/api/trips`) |
+| `trip-listing/` | Loads trips from the service, lays out cards, Add Trip button, handles delete |
+| `trip-card/` | Renders one trip; Edit and Delete buttons |
+| `add-trip/`, `edit-trip/` | Reactive forms with validation; edit loads the trip from the `/edit-trip/:code` URL |
+| `data/trips.ts` | Mock trips used only by the unit tests |
+| `app.routes.ts` | `''` listing, `add-trip`, `edit-trip/:code` |
+
+### Testing
+* `npm test` (project root): 18 offline API tests (all five endpoints, success + 400/404/409/500 paths, CORS).
+* `cd app_admin && npm test` (`ng test`, needs Chrome): 26 Jasmine specs for the service, card, listing, add and edit components, using the mock trips.
+* Postman: import `postman/travlr-api.postman_collection.json`, run it in order against a freshly seeded database; it adds, updates and deletes a trip and ends with the database unchanged.

@@ -1,0 +1,73 @@
+<div class="col-md-6 col-lg-5">
+  <h2 class="text-center">Edit Trip</h2>
+  <div *ngIf="errorMessage" class="alert alert-danger" role="alert">{{ errorMessage }}</div>
+  <form *ngIf="editForm" [formGroup]="editForm" (ngSubmit)="onSubmit()" novalidate>
+    <div class="form-group mb-3">
+      <label class="form-label">Code:</label>
+      <input type="text" formControlName="code" placeholder="Trip Code" class="form-control"
+          [ngClass]="{ 'is-invalid': submitted && f['code'].errors }">
+      <div class="invalid-feedback d-block" *ngIf="submitted && f['code'].errors">
+        <div *ngIf="f['code'].errors?.['required']">Trip Code is required</div>
+      </div>
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Name:</label>
+      <input type="text" formControlName="name" placeholder="Name" class="form-control"
+          [ngClass]="{ 'is-invalid': submitted && f['name'].errors }">
+      <div class="invalid-feedback d-block" *ngIf="submitted && f['name'].errors">
+        <div *ngIf="f['name'].errors?.['required']">Name is required</div>
+      </div>
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Length:</label>
+      <input type="text" formControlName="length" placeholder="e.g. 4 nights / 5 days" class="form-control"
+          [ngClass]="{ 'is-invalid': submitted && f['length'].errors }">
+      <div class="invalid-feedback d-block" *ngIf="submitted && f['length'].errors">
+        <div *ngIf="f['length'].errors?.['required']">Length is required</div>
+      </div>
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Start:</label>
+      <input type="date" formControlName="start" placeholder="" class="form-control"
+          [ngClass]="{ 'is-invalid': submitted && f['start'].errors }">
+      <div class="invalid-feedback d-block" *ngIf="submitted && f['start'].errors">
+        <div *ngIf="f['start'].errors?.['required']">Start date is required</div>
+      </div>
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Resort:</label>
+      <input type="text" formControlName="resort" placeholder="Resort" class="form-control"
+          [ngClass]="{ 'is-invalid': submitted && f['resort'].errors }">
+      <div class="invalid-feedback d-block" *ngIf="submitted && f['resort'].errors">
+        <div *ngIf="f['resort'].errors?.['required']">Resort is required</div>
+      </div>
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Per Person (USD):</label>
+      <input type="text" formControlName="perPerson" placeholder="e.g. 799.00" class="form-control"
+          [ngClass]="{ 'is-invalid': submitted && f['perPerson'].errors }">
+      <div class="invalid-feedback d-block" *ngIf="submitted && f['perPerson'].errors">
+        <div *ngIf="f['perPerson'].errors?.['required']">Per Person price is required</div>
+        <div *ngIf="f['perPerson'].errors?.['pattern']">Enter a price such as 799.00</div>
+      </div>
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Image Name:</label>
+      <input type="text" formControlName="image" placeholder="e.g. reef1.jpg" class="form-control"
+          [ngClass]="{ 'is-invalid': submitted && f['image'].errors }">
+      <div class="invalid-feedback d-block" *ngIf="submitted && f['image'].errors">
+        <div *ngIf="f['image'].errors?.['required']">Image Name is required</div>
+      </div>
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Description (HTML allowed):</label>
+      <textarea formControlName="description" rows="4" placeholder="Description" class="form-control"
+          [ngClass]="{ 'is-invalid': submitted && f['description'].errors }"></textarea>
+      <div class="invalid-feedback d-block" *ngIf="submitted && f['description'].errors">
+        <div *ngIf="f['description'].errors?.['required']">Description is required</div>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-info me-2">Save</button>
+    <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+  </form>
+</div>

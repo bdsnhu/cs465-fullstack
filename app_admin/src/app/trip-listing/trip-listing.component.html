@@ -1,0 +1,13 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">Trips</h2>
+  <button type="button" class="btn btn-info" (click)="addTrip()">Add Trip</button>
+</div>
+
+<div *ngIf="errorMessage" class="alert alert-danger" role="alert">{{ errorMessage }}</div>
+<p *ngIf="message" class="text-muted">{{ message }}</p>
+
+<div class="row">
+  <div *ngFor="let trip of trips" class="col-12 col-md-6 col-lg-4 mb-4">
+    <app-trip-card [trip]="trip" (deleteRequested)="onDelete($event)"></app-trip-card>
+  </div>
+</div>

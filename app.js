@@ -33,6 +33,16 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/travel', travelRouter);
+// Enable CORS for the API so the Angular admin SPA (http://localhost:4200) can call it
+app.use('/api', (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:4200');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  // Answer the browser's CORS preflight request (sent before PUT/DELETE/JSON POST)
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
+
 app.use('/api', apiRouter);
 
 // Unknown /api paths get a JSON 404 instead of the HTML error page

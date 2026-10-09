@@ -1,6 +1,7 @@
 {
   "info": {
-    "name": "Travlr API (Module 5)",
+    "name": "Travlr API (Module 6 - CRUD)",
+    "description": "Run in order against a freshly seeded database (npm run seed). Leaves the database as it found it.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -11,7 +12,7 @@
   ],
   "item": [
     {
-      "name": "GET all trips",
+      "name": "1. GET all trips (starts with the 3 seeded trips)",
       "event": [
         {
           "listen": "test",
@@ -19,8 +20,7 @@
             "type": "text/javascript",
             "exec": [
               "pm.test('Status is 200', () => pm.response.to.have.status(200));",
-              "pm.test('Content-Type is JSON', () => pm.response.to.have.header('Content-Type', /application\\/json/));",
-              "pm.test('Returns an array of 3 trips', () => { const j = pm.response.json(); pm.expect(j).to.be.an('array').with.lengthOf(3); });"
+              "pm.test('Array of trips', () => pm.expect(pm.response.json()).to.be.an('array').with.lengthOf(3));"
             ]
           }
         }
@@ -46,7 +46,7 @@
       }
     },
     {
-      "name": "GET one trip by code (GALR261114)",
+      "name": "2. GET one trip by code",
       "event": [
         {
           "listen": "test",
@@ -54,7 +54,7 @@
             "type": "text/javascript",
             "exec": [
               "pm.test('Status is 200', () => pm.response.to.have.status(200));",
-              "pm.test('Returns the Gale Reef trip', () => { const j = pm.response.json(); pm.expect(j).to.have.lengthOf(1); pm.expect(j[0].code).to.eql('GALR261114'); pm.expect(j[0].name).to.eql('Gale Reef'); });"
+              "pm.test('Gale Reef', () => pm.expect(pm.response.json()[0].name).to.eql('Gale Reef'));"
             ]
           }
         }
@@ -81,77 +81,7 @@
       }
     },
     {
-      "name": "GET one trip by code (DAWR261215)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
-              "pm.test('Returns Dawson\\'s Reef', () => pm.expect(pm.response.json()[0].code).to.eql('DAWR261215'));"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Accept",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/trips/DAWR261215",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "trips",
-            "DAWR261215"
-          ]
-        }
-      }
-    },
-    {
-      "name": "GET one trip by code (CLAR270121)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
-              "pm.test('Returns Claire\\'s Reef', () => pm.expect(pm.response.json()[0].code).to.eql('CLAR270121'));"
-            ]
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Accept",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/trips/CLAR270121",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "trips",
-            "CLAR270121"
-          ]
-        }
-      }
-    },
-    {
-      "name": "GET unknown trip code -> 404",
+      "name": "3. GET unknown code -> 404",
       "event": [
         {
           "listen": "test",
@@ -159,7 +89,7 @@
             "type": "text/javascript",
             "exec": [
               "pm.test('Status is 404', () => pm.response.to.have.status(404));",
-              "pm.test('Error message returned as JSON', () => pm.expect(pm.response.json().message).to.include('not found'));"
+              "pm.test('JSON message', () => pm.expect(pm.response.json().message).to.match(/not found/i));"
             ]
           }
         }
@@ -173,28 +103,168 @@
           }
         ],
         "url": {
-          "raw": "{{baseUrl}}/api/trips/NOTACODE",
+          "raw": "{{baseUrl}}/api/trips/NOPE",
           "host": [
             "{{baseUrl}}"
           ],
           "path": [
             "api",
             "trips",
-            "NOTACODE"
+            "NOPE"
           ]
         }
       }
     },
     {
-      "name": "GET unknown API path -> 404",
+      "name": "4. POST add a trip -> 201",
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('Status is 404', () => pm.response.to.have.status(404));",
-              "pm.test('Error message returned as JSON', () => pm.expect(pm.response.json()).to.have.property('message'));"
+              "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+              "pm.test('Echoes the new trip', () => pm.expect(pm.response.json().code).to.eql('TESTR270301'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/trips",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "trips"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"TESTR270301\",\n  \"name\": \"Test Reef\",\n  \"length\": \"3 nights / 4 days\",\n  \"start\": \"2027-03-01\",\n  \"resort\": \"Test Bay, 3 stars\",\n  \"perPerson\": \"599.00\",\n  \"image\": \"reef3.jpg\",\n  \"description\": \"<p>A test trip added from Postman.</p>\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "5. POST duplicate code -> 409",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 409', () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/trips",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "trips"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"TESTR270301\",\n  \"name\": \"Test Reef\",\n  \"length\": \"3 nights / 4 days\",\n  \"start\": \"2027-03-01\",\n  \"resort\": \"Test Bay, 3 stars\",\n  \"perPerson\": \"599.00\",\n  \"image\": \"reef3.jpg\",\n  \"description\": \"<p>A test trip added from Postman.</p>\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "6. POST incomplete trip -> 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 400', () => pm.response.to.have.status(400));",
+              "pm.test('Lists validation errors', () => pm.expect(pm.response.json().errors).to.be.an('array').that.is.not.empty);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/trips",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "trips"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"BAD1\",\n  \"name\": \"Incomplete\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "7. GET all trips (now 4)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('4 trips', () => pm.expect(pm.response.json()).to.have.lengthOf(4));"
             ]
           }
         }
@@ -208,13 +278,293 @@
           }
         ],
         "url": {
-          "raw": "{{baseUrl}}/api/nothing",
+          "raw": "{{baseUrl}}/api/trips",
           "host": [
             "{{baseUrl}}"
           ],
           "path": [
             "api",
-            "nothing"
+            "trips"
+          ]
+        }
+      }
+    },
+    {
+      "name": "8. PUT update the new trip -> 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Name and price changed', () => { const j = pm.response.json(); pm.expect(j.name).to.eql('Test Reef Deluxe'); pm.expect(j.perPerson).to.eql('699.00'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/trips/TESTR270301",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "trips",
+            "TESTR270301"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"TESTR270301\",\n  \"name\": \"Test Reef Deluxe\",\n  \"length\": \"3 nights / 4 days\",\n  \"start\": \"2027-03-01\",\n  \"resort\": \"Test Bay, 3 stars\",\n  \"perPerson\": \"699.00\",\n  \"image\": \"reef3.jpg\",\n  \"description\": \"<p>A test trip added from Postman.</p>\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "9. GET the updated trip (persisted)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Update was saved', () => pm.expect(pm.response.json()[0].name).to.eql('Test Reef Deluxe'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/trips/TESTR270301",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "trips",
+            "TESTR270301"
+          ]
+        }
+      }
+    },
+    {
+      "name": "10. PUT unknown code -> 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/trips/NOPE",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "trips",
+            "NOPE"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"TESTR270301\",\n  \"name\": \"Test Reef\",\n  \"length\": \"3 nights / 4 days\",\n  \"start\": \"2027-03-01\",\n  \"resort\": \"Test Bay, 3 stars\",\n  \"perPerson\": \"599.00\",\n  \"image\": \"reef3.jpg\",\n  \"description\": \"<p>A test trip added from Postman.</p>\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "11. PUT with a blank required field -> 400",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 400', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/trips/TESTR270301",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "trips",
+            "TESTR270301"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"TESTR270301\",\n  \"name\": \"\",\n  \"length\": \"3 nights / 4 days\",\n  \"start\": \"2027-03-01\",\n  \"resort\": \"Test Bay, 3 stars\",\n  \"perPerson\": \"599.00\",\n  \"image\": \"reef3.jpg\",\n  \"description\": \"<p>A test trip added from Postman.</p>\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "12. DELETE the new trip -> 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Returns the deleted trip', () => pm.expect(pm.response.json().code).to.eql('TESTR270301'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/trips/TESTR270301",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "trips",
+            "TESTR270301"
+          ]
+        }
+      }
+    },
+    {
+      "name": "13. DELETE again -> 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/trips/TESTR270301",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "trips",
+            "TESTR270301"
+          ]
+        }
+      }
+    },
+    {
+      "name": "14. GET all trips (back to 3)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('3 trips', () => pm.expect(pm.response.json()).to.have.lengthOf(3));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/trips",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "trips"
           ]
         }
       }

@@ -34,6 +34,13 @@ const travel = async (req, res) => {
             message = 'No trips exist in our database!';
         }
 
+        // Accept image values stored as "reef1.jpg" or "images/reef1.jpg" (the admin SPA
+        // and the seed data use different forms) and always point at /images/<file>
+        trips = trips.map(t => ({
+            ...t,
+            image: '/images/' + String(t.image || '').replace(/^\/?(images\/)?/, '')
+        }));
+
         res.render('travel', { title: 'Travlr Getaways', trips, message });
     } catch (err) {
         res.status(500).send(err.message);
