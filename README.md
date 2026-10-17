@@ -1,4 +1,4 @@
-# Travlr Getaways – Module Six
+# Travlr Getaways
 
 ## Setup
 1. Install and start MongoDB locally (default port 27017).
@@ -80,3 +80,47 @@ npm start                       # Angular admin SPA on http://localhost:4200  (r
 * `npm test` (project root): 18 offline API tests (all five endpoints, success + 400/404/409/500 paths, CORS).
 * `cd app_admin && npm test` (`ng test`, needs Chrome): 26 Jasmine specs for the service, card, listing, add and edit components, using the mock trips.
 * Postman: import `postman/travlr-api.postman_collection.json`, run it in order against a freshly seeded database; it adds, updates and deletes a trip and ends with the database unchanged.
+
+
+## Module Seven: Security (JWT login for the admin SPA)
+
+### Setup
+```
+npm install                     # adds jsonwebtoken, passport, passport-local, dotenv
+cp .env.example .env            # then set JWT_SECRET to a long random string (.env is git-ignored)
+npm run seed                    # trips
+npm run seed:users              # mock admin users: admin@travlr.test / Admin#12345 , second@travlr.test / Second#12345
+npm start                       # API + site on :3000 (refuses to start without JWT_SECRET)
+cd app_admin && npm install && npm start    # admin SPA on :4200
+```
+
+### How it works
+* **Passwords** are never stored: `app_api/models/user.js` keeps a random 16-byte salt and a PBKDF2-SHA512 hash.
+* **Login** (`POST /api/login`) uses Passport's local strategy (`app_api/config/passport.js`) and returns a 1-hour JWT signed with `JWT_SECRET`.
+* **Register** (`POST /api/register`) creates a user and returns a JWT (400 for missing fields / password under 8 chars, 409 for a duplicate email).
+* **Middleware** `authenticateJWT` (`app_api/routes/index.js`) guards the admin endpoints. Missing, malformed, tampered, wrong-secret or expired tokens get a JSON 401 and never reach the controller.
+
+| Method | Endpoint | Access |
+|---|---|---|
+| POST | `/api/register`, `/api/login` | public |
+| GET | `/api/trips`, `/api/trips/:code` | public |
+| POST | `/api/trips` | **JWT required** |
+| PUT, DELETE | `/api/trips/:code` | **JWT required** |
+
+### Angular changes (`app_admin/src/app`)
+| File | Purpose |
+|---|---|
+| `storage.ts` | injectable `localStorage` token |
+| `models/user.ts`, `models/auth-response.ts` | user and token shapes |
+| `services/authentication.service.ts` | save/read/remove token (`travlr-token`), `isLoggedIn()` (checks expiry), `login()`, `register()` |
+| `services/trip-data.service.ts` | adds `login()` / `register()` API calls |
+| `utils/jwt.interceptor.ts` | adds `Authorization: Bearer <token>` to API calls (not login/register, not other hosts) |
+| `guards/auth.guard.ts` | `/add-trip` and `/edit-trip/:code` redirect to `/login` when logged out |
+| `navbar/`, `login/` | Log In / Log Out nav and email + password login form |
+| `trip-card/`, `trip-listing/` | Add / Edit / Delete buttons only shown when logged in |
+
+### Testing
+* `npm test` - 37 offline API tests, including register/login, hashing, and 401 for no/tampered/forged/expired/malformed/`alg:none` tokens.
+* `postman/travlr-api-module7.postman_collection.json` - run against the live API with MongoDB (19 requests: register, login, protected calls with and without a token, cleanup).
+* `cd app_admin && npm test` - Jasmine specs (needs Chrome) for the auth service, interceptor, guard, login, navbar, card and listing.
+* Manual front-end check: logged out you see only the trip cards and **Log In**; after logging in you see **Add Trip**, **Edit Trip**, **Delete** and **Log Out**; add/edit/delete then succeed.

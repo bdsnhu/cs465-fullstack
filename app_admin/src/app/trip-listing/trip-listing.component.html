@@ -1,6 +1,6 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h2 class="mb-0">Trips</h2>
-  <button type="button" class="btn btn-info" (click)="addTrip()">Add Trip</button>
+  <button type="button" class="btn btn-info" *ngIf="isLoggedIn()" (click)="addTrip()">Add Trip</button>
 </div>
 
 <div *ngIf="errorMessage" class="alert alert-danger" role="alert">{{ errorMessage }}</div>

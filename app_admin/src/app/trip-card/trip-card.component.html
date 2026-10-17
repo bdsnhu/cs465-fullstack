@@ -9,7 +9,7 @@
     <p class="small text-muted mb-3">Starts {{ trip.start | date:'mediumDate':'UTC' }} &middot; {{ trip.code }}</p>
     <div class="card-text" [innerHTML]="trip.description"></div>
   </div>
-  <div class="card-footer d-flex gap-2">
+  <div class="card-footer d-flex gap-2" *ngIf="isLoggedIn()">
     <button type="button" class="btn btn-info" (click)="editTrip(trip)">Edit Trip</button>
     <button type="button" class="btn btn-outline-danger" (click)="deleteTrip(trip)">Delete</button>
   </div>

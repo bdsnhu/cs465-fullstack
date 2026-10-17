@@ -1,3 +1,4 @@
+require('dotenv').config();   // load JWT_SECRET etc. from .env
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -9,6 +10,10 @@ var usersRouter = require('./app_server/routes/users');
 var travelRouter = require('./app_server/routes/travel');
 var apiRouter = require('./app_api/routes/index');
 var handlebars = require('hbs');
+
+// Wire in our authentication module
+var passport = require('passport');
+require('./app_api/config/passport');
 
 // Bring in the database connection (connects to MongoDB and registers the Trip model)
 // The models now live with the API in app_api
@@ -29,6 +34,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(passport.initialize());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
@@ -48,6 +54,15 @@ app.use('/api', apiRouter);
 // Unknown /api paths get a JSON 404 instead of the HTML error page
 app.use('/api', function(req, res) {
   res.status(404).json({ message: 'API endpoint not found' });
+});
+
+// Catch an unauthorized error from the auth layer and answer with a JSON 401;
+// anything else continues on to the normal error handler
+app.use('/api', function(err, req, res, next) {
+  if (err && err.name === 'UnauthorizedError') {
+    return res.status(401).json({ message: err.name + ': ' + err.message });
+  }
+  next(err);
 });
 
 // catch 404 and forward to error handler

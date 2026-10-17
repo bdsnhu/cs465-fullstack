@@ -57,4 +57,19 @@ describe('TripDataService', () => {
     expect(req.request.method).toBe('DELETE');
     req.flush(trips[2]);
   });
+
+  it('login() issues POST /api/login with email + password and returns the token', () => {
+    service.login({ email: 'a@b.c', name: '' }, 'secret123').subscribe(r => expect(r.token).toBe('jwt'));
+    const req = http.expectOne('http://localhost:3000/api/login');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ name: '', email: 'a@b.c', password: 'secret123' });
+    req.flush({ token: 'jwt' });
+  });
+
+  it('register() issues POST /api/register', () => {
+    service.register({ email: 'a@b.c', name: 'Ann' }, 'secret123').subscribe();
+    const req = http.expectOne('http://localhost:3000/api/register');
+    expect(req.request.method).toBe('POST');
+    req.flush({ token: 'jwt' }, { status: 201, statusText: 'Created' });
+  });
 });

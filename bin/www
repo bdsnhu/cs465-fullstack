@@ -5,6 +5,12 @@
  */
 
 var app = require('../app');
+
+// Fail fast: without a secret the API cannot sign or verify tokens
+if (!process.env.JWT_SECRET) {
+  console.error('JWT_SECRET is not set. Copy .env.example to .env and set a long random value.');
+  process.exit(1);
+}
 var debug = require('debug')('travlr:server');
 var http = require('http');
 

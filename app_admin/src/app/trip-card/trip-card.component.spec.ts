@@ -2,17 +2,24 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { TripCardComponent } from './trip-card.component';
 import { trips } from '../data/trips';
+import { AuthenticationService } from '../services/authentication.service';
 
 describe('TripCardComponent', () => {
   let fixture: ComponentFixture<TripCardComponent>;
   let component: TripCardComponent;
   let router: jasmine.SpyObj<Router>;
+  let auth: jasmine.SpyObj<AuthenticationService>;
 
   beforeEach(async () => {
     router = jasmine.createSpyObj('Router', ['navigate']);
+    auth = jasmine.createSpyObj('AuthenticationService', ['isLoggedIn']);
+    auth.isLoggedIn.and.returnValue(true);   // default: an admin is logged in
     await TestBed.configureTestingModule({
       imports: [TripCardComponent],
-      providers: [{ provide: Router, useValue: router }]
+      providers: [
+        { provide: Router, useValue: router },
+        { provide: AuthenticationService, useValue: auth }
+      ]
     }).compileComponents();
     fixture = TestBed.createComponent(TripCardComponent);
     component = fixture.componentInstance;
@@ -44,5 +51,18 @@ describe('TripCardComponent', () => {
     component.deleteRequested.subscribe(t => emitted = t);
     (fixture.nativeElement.querySelector('.btn-outline-danger') as HTMLButtonElement).click();
     expect(emitted).toBe(trips[0]);
+  });
+
+  it('shows Edit and Delete buttons when logged in', () => {
+    expect(fixture.nativeElement.querySelector('.btn-info')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.btn-outline-danger')).not.toBeNull();
+  });
+
+  it('hides Edit and Delete buttons when logged out', () => {
+    auth.isLoggedIn.and.returnValue(false);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.btn-info')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.btn-outline-danger')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.card-header')?.textContent).toContain('Gale Reef');   // trip still visible
   });
 });

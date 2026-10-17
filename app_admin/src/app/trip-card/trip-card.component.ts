@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Trip } from '../models/trip';
+import { AuthenticationService } from '../services/authentication.service';
 
 // Renders ONE trip as a Bootstrap card. The listing component passes the trip in
 // and is told (via the `deleteRequested` event) when the admin clicks Delete.
@@ -16,7 +17,15 @@ export class TripCardComponent {
   @Input('trip') trip!: Trip;
   @Output() deleteRequested = new EventEmitter<Trip>();
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authenticationService: AuthenticationService
+  ) {}
+
+  // Edit/Delete are only shown to a logged-in admin
+  public isLoggedIn(): boolean {
+    return this.authenticationService.isLoggedIn();
+  }
 
   // Works whether the stored value is "reef1.jpg" or "images/reef1.jpg"
   get imageSrc(): string {

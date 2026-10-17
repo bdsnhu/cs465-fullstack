@@ -1,0 +1,11 @@
+<nav class="navbar navbar-dark bg-dark mb-4">
+  <div class="container-fluid">
+    <a class="navbar-brand" routerLink="/">{{ title }}</a>
+    <div class="d-flex align-items-center gap-3">
+      <span *ngIf="isLoggedIn()" class="navbar-text small user-name">Signed in as {{ userName() }}</span>
+      <a *ngIf="!isLoggedIn()" class="btn btn-outline-light btn-sm login-link" routerLink="login">Log In</a>
+      <button *ngIf="isLoggedIn()" type="button" class="btn btn-outline-light btn-sm logout-link"
+              (click)="onLogout()">Log Out</button>
+    </div>
+  </div>
+</nav>

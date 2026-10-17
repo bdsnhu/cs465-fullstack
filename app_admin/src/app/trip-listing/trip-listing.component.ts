@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Trip } from '../models/trip';
 import { TripDataService } from '../services/trip-data.service';
+import { AuthenticationService } from '../services/authentication.service';
 import { TripCardComponent } from '../trip-card/trip-card.component';
 
 @Component({
@@ -18,7 +19,16 @@ export class TripListingComponent implements OnInit {
   message = '';
   errorMessage = '';
 
-  constructor(private tripDataService: TripDataService, private router: Router) {}
+  constructor(
+    private tripDataService: TripDataService,
+    private router: Router,
+    private authenticationService: AuthenticationService
+  ) {}
+
+  // The Add Trip button is only shown to a logged-in admin
+  public isLoggedIn(): boolean {
+    return this.authenticationService.isLoggedIn();
+  }
 
   ngOnInit(): void {
     this.getTrips();
@@ -36,7 +46,9 @@ export class TripListingComponent implements OnInit {
     this.tripDataService.deleteTrip(trip.code).subscribe({
       next: () => this.getTrips(),
       error: (error: any) => {
-        this.errorMessage = `Could not delete ${trip.code}: ${error?.error?.message ?? error.message}`;
+        this.errorMessage = error?.status === 401
+          ? 'Your session has expired. Please log in again.'
+          : `Could not delete ${trip.code}: ${error?.error?.message ?? error.message}`;
       }
     });
   }

@@ -1,0 +1,23 @@
+<div class="row justify-content-center">
+  <div class="col-12 col-md-6 col-lg-5">
+    <h2>Admin Login</h2>
+    <p class="text-muted">Sign in to add, edit or delete trips.</p>
+    <form (ngSubmit)="onLoginSubmit()" novalidate>
+      <div role="alert" *ngIf="formError" class="alert alert-danger">{{ formError }}</div>
+      <div class="mb-3">
+        <label for="email" class="form-label">Email Address</label>
+        <input type="email" class="form-control" id="email" name="email" autocomplete="username"
+               placeholder="Enter email address" [(ngModel)]="credentials.email">
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" class="form-control" id="password" name="password"
+               autocomplete="current-password" placeholder="Enter password"
+               [(ngModel)]="credentials.password">
+      </div>
+      <button type="submit" class="btn btn-primary" [disabled]="submitting">
+        {{ submitting ? 'Signing in...' : 'Sign In' }}
+      </button>
+    </form>
+  </div>
+</div>

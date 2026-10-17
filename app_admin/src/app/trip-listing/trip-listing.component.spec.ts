@@ -4,11 +4,13 @@ import { of, throwError } from 'rxjs';
 import { TripListingComponent } from './trip-listing.component';
 import { TripDataService } from '../services/trip-data.service';
 import { trips } from '../data/trips';
+import { AuthenticationService } from '../services/authentication.service';
 
 describe('TripListingComponent', () => {
   let fixture: ComponentFixture<TripListingComponent>;
   let service: jasmine.SpyObj<TripDataService>;
   let router: jasmine.SpyObj<Router>;
+  let auth: jasmine.SpyObj<AuthenticationService>;
 
   const create = () => {
     TestBed.overrideComponent(TripListingComponent, {
@@ -21,9 +23,14 @@ describe('TripListingComponent', () => {
   beforeEach(async () => {
     service = jasmine.createSpyObj('TripDataService', ['getTrips', 'deleteTrip']);
     router = jasmine.createSpyObj('Router', ['navigate']);
+    auth = jasmine.createSpyObj('AuthenticationService', ['isLoggedIn']);
+    auth.isLoggedIn.and.returnValue(true);   // default: an admin is logged in
     await TestBed.configureTestingModule({
       imports: [TripListingComponent],
-      providers: [{ provide: Router, useValue: router }]
+      providers: [
+        { provide: Router, useValue: router },
+        { provide: AuthenticationService, useValue: auth }
+      ]
     }).compileComponents();
   });
 
@@ -70,5 +77,28 @@ describe('TripListingComponent', () => {
     create();
     fixture.componentInstance.onDelete(trips[0]);
     expect(service.deleteTrip).not.toHaveBeenCalled();
+  });
+
+  it('shows the Add Trip button when logged in', () => {
+    service.getTrips.and.returnValue(of(trips));
+    create();
+    expect(fixture.nativeElement.querySelector('.btn-info')).not.toBeNull();
+  });
+
+  it('hides the Add Trip button when logged out, but still lists the trips', () => {
+    auth.isLoggedIn.and.returnValue(false);
+    service.getTrips.and.returnValue(of(trips));
+    create();
+    expect(fixture.nativeElement.querySelector('.btn-info')).toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('app-trip-card').length).toBe(3);
+  });
+
+  it('delete rejected with 401 tells the admin the session expired', () => {
+    service.getTrips.and.returnValue(of(trips));
+    service.deleteTrip.and.returnValue(throwError(() => ({ status: 401 })));
+    spyOn(window, 'confirm').and.returnValue(true);
+    create();
+    fixture.componentInstance.onDelete(trips[0]);
+    expect(fixture.componentInstance.errorMessage).toContain('session has expired');
   });
 });
